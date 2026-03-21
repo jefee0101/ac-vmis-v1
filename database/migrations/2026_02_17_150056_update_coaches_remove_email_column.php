@@ -8,10 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('coaches', 'email')) {
+            return;
+        }
+
         Schema::table('coaches', function (Blueprint $table) {
-            if (Schema::hasColumn('coaches', 'email')) {
-                $table->dropColumn('email');
-            }
+            $table->dropUnique('coaches_email_unique');
+        });
+
+        Schema::table('coaches', function (Blueprint $table) {
+            $table->dropColumn('email');
         });
     }
 
