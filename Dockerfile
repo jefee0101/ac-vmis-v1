@@ -8,10 +8,12 @@ COPY . .
 RUN composer dump-autoload --optimize --no-scripts \
     && php artisan package:discover --ansi
 
-FROM node:20-bookworm-slim AS node-builder
+FROM php:8.4-cli AS node-builder
 WORKDIR /app
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends php8.2-cli \
+    && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -19,7 +21,7 @@ COPY . .
 COPY --from=composer-builder /app/vendor /app/vendor
 RUN npm run build
 
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
